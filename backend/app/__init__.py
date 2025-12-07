@@ -4,7 +4,7 @@ AFAD Yönetim Sistemi - Ana Uygulama Modülü
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from backend.config import settings
+from config import settings
 import os
 
 
@@ -32,7 +32,7 @@ def create_app() -> FastAPI:
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 
     # Route'ları import et ve kaydet
-    from backend.app.routes import (
+    from app.routes import (
         auth,
         users,
         disasters,

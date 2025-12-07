@@ -1,7 +1,7 @@
 """
 AFAD Yönetim Sistemi - Yardımcı Fonksiyonlar
 """
-from backend.app.utils.security import (
+from app.utils.security import (
     verify_password,
     get_password_hash,
     create_access_token,

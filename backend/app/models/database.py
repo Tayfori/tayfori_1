@@ -4,7 +4,7 @@ Veritabanı bağlantısı ve oturum yönetimi
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from backend.config import settings
+from config import settings
 import os
 
 # Veritabanı dizinini oluştur
@@ -36,7 +36,7 @@ def get_db():
 def init_db():
     """Veritabanını başlat ve tabloları oluştur"""
     # Tüm modelleri import et
-    from backend.app.models import user, disaster, victim, inventory, notification
+    from app.models import user, disaster, victim, inventory, notification
 
     # Tabloları oluştur
     Base.metadata.create_all(bind=engine)

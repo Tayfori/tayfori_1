@@ -4,7 +4,7 @@ Bildirim modeli
 from sqlalchemy import Column, Integer, String, DateTime, Text, Enum, ForeignKey, Boolean
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from backend.app.models.database import Base
+from app.models.database import Base
 import enum
 
 

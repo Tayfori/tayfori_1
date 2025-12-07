@@ -4,9 +4,9 @@ Kullanıcı yönetimi route'ları
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from backend.app.models.database import get_db
-from backend.app.models.user import User, UserRole
-from backend.app.utils.security import get_current_user, require_admin
+from app.models.database import get_db
+from app.models.user import User, UserRole
+from app.utils.security import get_current_user, require_admin
 
 router = APIRouter()
 

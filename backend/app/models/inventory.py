@@ -4,7 +4,7 @@ Envanter modeli
 from sqlalchemy import Column, Integer, String, Float, DateTime, Text, Enum, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from backend.app.models.database import Base
+from app.models.database import Base
 import enum
 
 

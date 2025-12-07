@@ -4,15 +4,15 @@ Envanter yönetimi route'ları
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from backend.app.models.database import get_db
-from backend.app.models.inventory import (
+from app.models.database import get_db
+from app.models.inventory import (
     InventoryItem,
     InventoryTransaction,
     ItemCategory,
     ItemStatus,
 )
-from backend.app.models.user import User
-from backend.app.utils.security import get_current_user, require_coordinator_or_admin
+from app.models.user import User
+from app.utils.security import get_current_user, require_coordinator_or_admin
 
 router = APIRouter()
 

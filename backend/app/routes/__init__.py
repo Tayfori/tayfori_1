@@ -1,7 +1,7 @@
 """
 AFAD Yönetim Sistemi - API Routes
 """
-from backend.app.routes import (
+from app.routes import (
     auth,
     users,
     disasters,

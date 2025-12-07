@@ -4,11 +4,11 @@ AFAD Yönetim Sistemi - Ana Uygulama
 """
 import argparse
 import uvicorn
-from backend.app import create_app
-from backend.app.models.database import init_db, SessionLocal
-from backend.app.models.user import User, UserRole
-from backend.app.utils.security import get_password_hash
-from backend.config import settings
+from app import create_app
+from app.models.database import init_db, SessionLocal
+from app.models.user import User, UserRole
+from app.utils.security import get_password_hash
+from config import settings
 
 
 def initialize_database():
@@ -141,7 +141,7 @@ def main():
 
     # Sunucuyu başlat
     uvicorn.run(
-        "backend.app:create_app",
+        "app:create_app",
         host=args.host,
         port=args.port,
         reload=args.reload,

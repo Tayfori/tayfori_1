@@ -8,9 +8,9 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from backend.config import settings
-from backend.app.models.database import get_db
-from backend.app.models.user import User, UserRole
+from config import settings
+from app.models.database import get_db
+from app.models.user import User, UserRole
 
 # Şifre hash context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

@@ -4,12 +4,12 @@ Dashboard ve istatistik route'ları
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from backend.app.models.database import get_db
-from backend.app.models.disaster import Disaster, DisasterStatus, DisasterSeverity
-from backend.app.models.victim import Victim, VictimStatus
-from backend.app.models.inventory import InventoryItem, ItemStatus
-from backend.app.models.user import User
-from backend.app.utils.security import get_current_user
+from app.models.database import get_db
+from app.models.disaster import Disaster, DisasterStatus, DisasterSeverity
+from app.models.victim import Victim, VictimStatus
+from app.models.inventory import InventoryItem, ItemStatus
+from app.models.user import User
+from app.utils.security import get_current_user
 
 router = APIRouter()
 

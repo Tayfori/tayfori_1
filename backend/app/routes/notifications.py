@@ -5,10 +5,10 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from backend.app.models.database import get_db
-from backend.app.models.notification import Notification, NotificationType, NotificationStatus
-from backend.app.models.user import User
-from backend.app.utils.security import get_current_user, require_coordinator_or_admin
+from app.models.database import get_db
+from app.models.notification import Notification, NotificationType, NotificationStatus
+from app.models.user import User
+from app.utils.security import get_current_user, require_coordinator_or_admin
 
 router = APIRouter()
 
