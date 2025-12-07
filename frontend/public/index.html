@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AFAD Yönetim Sistemi</title>
+    <link rel="stylesheet" href="../src/assets/css/styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span>🚨</span>
+                <span>AFAD Yönetim Sistemi</span>
+            </div>
+            <nav class="nav">
+                <a href="/index.html">Dashboard</a>
+                <a href="/disasters.html">Afetler</a>
+                <a href="/victims.html">Afetzedeler</a>
+                <a href="/inventory.html">Envanter</a>
+            </nav>
+            <div class="user-menu">
+                <span class="user-name" id="userName">Kullanıcı</span>
+                <button class="btn-logout" onclick="logout()">Çıkış</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1 class="mb-3">📊 Dashboard</h1>
+
+        <!-- İstatistik Kartları -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-icon danger">🌋</div>
+                <div class="stat-content">
+                    <h3 id="activeDisasters">-</h3>
+                    <p>Aktif Afet</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon warning">⚠️</div>
+                <div class="stat-content">
+                    <h3 id="criticalDisasters">-</h3>
+                    <p>Kritik Durum</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon info">👥</div>
+                <div class="stat-content">
+                    <h3 id="totalVictims">-</h3>
+                    <p>Toplam Afetzede</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon success">📦</div>
+                <div class="stat-content">
+                    <h3 id="inventoryItems">-</h3>
+                    <p>Envanter Kalemi</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Harita -->
+        <div class="card">
+            <div class="card-header">🗺️ Afet Haritası</div>
+            <div id="map"></div>
+        </div>
+
+        <!-- Son Afetler -->
+        <div class="card">
+            <div class="card-header">🔥 Son Afetler</div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Başlık</th>
+                            <th>Tür</th>
+                            <th>Şiddet</th>
+                            <th>Konum</th>
+                            <th>Tarih</th>
+                            <th>Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentDisastersTable">
+                        <tr>
+                            <td colspan="6" class="text-center">Yükleniyor...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../src/services/api.js"></script>
+    <script src="../src/assets/js/utils.js"></script>
+    <script>
+        checkAuth();
+
+        // Kullanıcı bilgilerini göster
+        const user = getUser();
+        if (user) {
+            document.getElementById('userName').textContent = user.full_name;
+        }
+
+        let map;
+
+        // Haritayı başlat
+        function initMap() {
+            map = L.map('map').setView([39.9334, 32.8597], 6); // Türkiye merkezi
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+
+        // Dashboard verilerini yükle
+        async function loadDashboard() {
+            try {
+                const stats = await api.getDashboardStats();
+
+                // İstatistikleri güncelle
+                document.getElementById('activeDisasters').textContent = stats.disasters.active;
+                document.getElementById('criticalDisasters').textContent = stats.disasters.critical;
+                document.getElementById('totalVictims').textContent = formatNumber(stats.victims.total);
+                document.getElementById('inventoryItems').textContent = stats.inventory.total_items;
+
+                // Son afetleri göster
+                const tbody = document.getElementById('recentDisastersTable');
+                if (stats.recent_disasters.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center">Kayıt bulunamadı</td></tr>';
+                } else {
+                    tbody.innerHTML = stats.recent_disasters.map(d => `
+                        <tr>
+                            <td>${d.title}</td>
+                            <td>${getDisasterTypeLabel(d.type)}</td>
+                            <td><span class="badge ${getBadgeClass('severity', d.severity)}">${getSeverityLabel(d.severity)}</span></td>
+                            <td>${d.location}</td>
+                            <td>${formatShortDate(d.occurred_at)}</td>
+                            <td><span class="badge ${getBadgeClass('status', d.status)}">${getStatusLabel(d.status)}</span></td>
+                        </tr>
+                    `).join('');
+                }
+
+                // Harita verilerini yükle
+                loadMapData();
+
+            } catch (error) {
+                console.error('Dashboard yüklenemedi:', error);
+                showNotification('Dashboard yüklenemedi', 'error');
+            }
+        }
+
+        // Harita verilerini yükle
+        async function loadMapData() {
+            try {
+                const disasters = await api.getMapData();
+
+                disasters.forEach(disaster => {
+                    const color = disaster.severity === 'critical' ? 'red' :
+                                 disaster.severity === 'high' ? 'orange' :
+                                 disaster.severity === 'medium' ? 'yellow' : 'green';
+
+                    const marker = L.circleMarker([disaster.latitude, disaster.longitude], {
+                        color: color,
+                        fillColor: color,
+                        fillOpacity: 0.5,
+                        radius: 10
+                    }).addTo(map);
+
+                    marker.bindPopup(`
+                        <strong>${disaster.title}</strong><br>
+                        Tür: ${getDisasterTypeLabel(disaster.type)}<br>
+                        Şiddet: ${getSeverityLabel(disaster.severity)}<br>
+                        Etkilenen: ${formatNumber(disaster.affected_people)} kişi
+                    `);
+                });
+
+            } catch (error) {
+                console.error('Harita verileri yüklenemedi:', error);
+            }
+        }
+
+        // Sayfa yüklendiğinde
+        initMap();
+        loadDashboard();
+    </script>
+</body>
+</html>

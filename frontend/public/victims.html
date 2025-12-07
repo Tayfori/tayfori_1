@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afetzedeler - AFAD Yönetim Sistemi</title>
+    <link rel="stylesheet" href="../src/assets/css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span>🚨</span>
+                <span>AFAD Yönetim Sistemi</span>
+            </div>
+            <nav class="nav">
+                <a href="/index.html">Dashboard</a>
+                <a href="/disasters.html">Afetler</a>
+                <a href="/victims.html">Afetzedeler</a>
+                <a href="/inventory.html">Envanter</a>
+            </nav>
+            <div class="user-menu">
+                <span class="user-name" id="userName">Kullanıcı</span>
+                <button class="btn-logout" onclick="logout()">Çıkış</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>👥 Afetzede Yönetimi</h1>
+            <button class="btn btn-primary" onclick="openModal('newVictimModal')">
+                + Yeni Afetzede Kaydı
+            </button>
+        </div>
+
+        <!-- İstatistikler -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon success">✅</div>
+                <div class="stat-content">
+                    <h3 id="rescuedCount">-</h3>
+                    <p>Kurtarılan</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon warning">🏥</div>
+                <div class="stat-content">
+                    <h3 id="hospitalizedCount">-</h3>
+                    <p>Hastanede</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon danger">❓</div>
+                <div class="stat-content">
+                    <h3 id="missingCount">-</h3>
+                    <p>Kayıp</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon info">🏠</div>
+                <div class="stat-content">
+                    <h3 id="shelterCount">-</h3>
+                    <p>Barınakta</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Afetzede Listesi -->
+        <div class="card">
+            <div class="card-header">📋 Kayıtlı Afetzedeler</div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Adı Soyadı</th>
+                            <th>TC No</th>
+                            <th>Yaş</th>
+                            <th>Telefon</th>
+                            <th>Durum</th>
+                            <th>Öncelik</th>
+                            <th>Konum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="victimsTable">
+                        <tr>
+                            <td colspan="8" class="text-center">Yükleniyor...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yeni Afetzede Modal -->
+    <div id="newVictimModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Yeni Afetzede Kaydı</h2>
+                <span class="modal-close" onclick="closeModal('newVictimModal')">&times;</span>
+            </div>
+
+            <form id="newVictimForm">
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Afet *</label>
+                        <select name="disaster_id" id="disasterSelect" class="form-control" required>
+                            <option value="">Seçiniz...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">TC No</label>
+                        <input type="text" name="tc_no" class="form-control" maxlength="11">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Adı Soyadı *</label>
+                    <input type="text" name="full_name" class="form-control" required>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Yaş</label>
+                        <input type="number" name="age" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Cinsiyet</label>
+                        <select name="gender" class="form-control">
+                            <option value="">Seçiniz...</option>
+                            <option value="Erkek">Erkek</option>
+                            <option value="Kadın">Kadın</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Telefon</label>
+                        <input type="tel" name="phone" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Acil Durum İletişim</label>
+                        <input type="tel" name="emergency_contact" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Mevcut Konum</label>
+                    <input type="text" name="current_location" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Sağlık Durumu</label>
+                    <textarea name="health_condition" class="form-control" rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">İhtiyaçlar</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                        <label><input type="checkbox" name="needs_food" value="true"> Gıda</label>
+                        <label><input type="checkbox" name="needs_water" value="true"> Su</label>
+                        <label><input type="checkbox" name="needs_shelter" value="true"> Barınak</label>
+                        <label><input type="checkbox" name="needs_medical" value="true"> Tıbbi Yardım</label>
+                        <label><input type="checkbox" name="needs_clothing" value="true"> Giyim</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../src/services/api.js"></script>
+    <script src="../src/assets/js/utils.js"></script>
+    <script>
+        checkAuth();
+
+        const user = getUser();
+        if (user) {
+            document.getElementById('userName').textContent = user.full_name;
+        }
+
+        // Afetleri yükle (select için)
+        async function loadDisasters() {
+            try {
+                const disasters = await api.getDisasters({ status: 'active' });
+                const select = document.getElementById('disasterSelect');
+                select.innerHTML = '<option value="">Seçiniz...</option>' +
+                    disasters.map(d => `<option value="${d.id}">${d.title} - ${d.city}</option>`).join('');
+            } catch (error) {
+                console.error('Afetler yüklenemedi:', error);
+            }
+        }
+
+        // Afetzedeleri yükle
+        async function loadVictims() {
+            try {
+                const victims = await api.getVictims();
+                const tbody = document.getElementById('victimsTable');
+
+                // İstatistikleri hesapla
+                const stats = {
+                    rescued: victims.filter(v => v.status === 'rescued').length,
+                    hospitalized: victims.filter(v => v.status === 'hospitalized').length,
+                    missing: victims.filter(v => v.status === 'missing').length,
+                    in_shelter: victims.filter(v => v.status === 'in_shelter').length,
+                };
+
+                document.getElementById('rescuedCount').textContent = stats.rescued;
+                document.getElementById('hospitalizedCount').textContent = stats.hospitalized;
+                document.getElementById('missingCount').textContent = stats.missing;
+                document.getElementById('shelterCount').textContent = stats.in_shelter;
+
+                if (victims.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center">Kayıt bulunamadı</td></tr>';
+                } else {
+                    tbody.innerHTML = victims.map(v => `
+                        <tr>
+                            <td>${v.full_name}</td>
+                            <td>${v.tc_no || '-'}</td>
+                            <td>${v.age || '-'}</td>
+                            <td>${v.phone || '-'}</td>
+                            <td><span class="badge badge-info">${getStatusLabel(v.status)}</span></td>
+                            <td><span class="badge badge-warning">${v.priority}</span></td>
+                            <td>${v.current_location || '-'}</td>
+                            <td>
+                                <button class="btn btn-sm btn-secondary" onclick="viewVictim(${v.id})">Detay</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Afetzedeler yüklenemedi:', error);
+                showNotification('Afetzedeler yüklenemedi', 'error');
+            }
+        }
+
+        // Yeni afetzede formu
+        document.getElementById('newVictimForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const data = {};
+
+            formData.forEach((value, key) => {
+                if (key.startsWith('needs_')) {
+                    data[key] = true;
+                } else {
+                    data[key] = value;
+                }
+            });
+
+            // Boş değerleri temizle ve sayıları dönüştür
+            if (data.disaster_id) data.disaster_id = parseInt(data.disaster_id);
+            if (data.age) data.age = parseInt(data.age);
+            data.family_members_count = 0;
+
+            // Checkbox'lar için varsayılan false değerleri
+            ['needs_food', 'needs_water', 'needs_shelter', 'needs_medical', 'needs_clothing'].forEach(field => {
+                if (!data[field]) data[field] = false;
+            });
+
+            try {
+                await api.createVictim(data);
+                showNotification('Afetzede kaydı oluşturuldu', 'success');
+                closeModal('newVictimModal');
+                e.target.reset();
+                loadVictims();
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        });
+
+        function viewVictim(id) {
+            showNotification('Detay sayfası yakında eklenecek', 'info');
+        }
+
+        // Sayfa yüklendiğinde
+        loadDisasters();
+        loadVictims();
+    </script>
+</body>
+</html>

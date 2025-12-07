@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afetler - AFAD Yönetim Sistemi</title>
+    <link rel="stylesheet" href="../src/assets/css/styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span>🚨</span>
+                <span>AFAD Yönetim Sistemi</span>
+            </div>
+            <nav class="nav">
+                <a href="/index.html">Dashboard</a>
+                <a href="/disasters.html">Afetler</a>
+                <a href="/victims.html">Afetzedeler</a>
+                <a href="/inventory.html">Envanter</a>
+            </nav>
+            <div class="user-menu">
+                <span class="user-name" id="userName">Kullanıcı</span>
+                <button class="btn-logout" onclick="logout()">Çıkış</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>🌋 Afet Yönetimi</h1>
+            <button class="btn btn-primary" onclick="openModal('newDisasterModal')">
+                + Yeni Afet Kaydı
+            </button>
+        </div>
+
+        <!-- Filtreler -->
+        <div class="card">
+            <div class="grid grid-2">
+                <div class="form-group">
+                    <label class="form-label">Durum</label>
+                    <select class="form-control" id="filterStatus" onchange="loadDisasters()">
+                        <option value="">Tümü</option>
+                        <option value="active">Aktif</option>
+                        <option value="monitoring">İzleniyor</option>
+                        <option value="resolved">Çözüldü</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tür</label>
+                    <select class="form-control" id="filterType" onchange="loadDisasters()">
+                        <option value="">Tümü</option>
+                        <option value="earthquake">Deprem</option>
+                        <option value="flood">Sel</option>
+                        <option value="fire">Yangın</option>
+                        <option value="landslide">Heyelan</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Afet Listesi -->
+        <div class="card">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Başlık</th>
+                            <th>Tür</th>
+                            <th>Şiddet</th>
+                            <th>Konum</th>
+                            <th>Etkilenen</th>
+                            <th>Tarih</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody id="disastersTable">
+                        <tr>
+                            <td colspan="8" class="text-center">Yükleniyor...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yeni Afet Modal -->
+    <div id="newDisasterModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Yeni Afet Kaydı</h2>
+                <span class="modal-close" onclick="closeModal('newDisasterModal')">&times;</span>
+            </div>
+
+            <form id="newDisasterForm">
+                <div class="form-group">
+                    <label class="form-label">Başlık *</label>
+                    <input type="text" name="title" class="form-control" required>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Afet Türü *</label>
+                        <select name="disaster_type" class="form-control" required>
+                            <option value="earthquake">Deprem</option>
+                            <option value="flood">Sel</option>
+                            <option value="fire">Yangın</option>
+                            <option value="landslide">Heyelan</option>
+                            <option value="avalanche">Çığ</option>
+                            <option value="storm">Fırtına</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Şiddet *</label>
+                        <select name="severity" class="form-control" required>
+                            <option value="low">Düşük</option>
+                            <option value="medium">Orta</option>
+                            <option value="high">Yüksek</option>
+                            <option value="critical">Kritik</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">İl *</label>
+                        <input type="text" name="city" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">İlçe</label>
+                        <input type="text" name="district" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Konum Adı *</label>
+                    <input type="text" name="location_name" class="form-control" required>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Enlem</label>
+                        <input type="number" step="any" name="latitude" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Boylam</label>
+                        <input type="number" step="any" name="longitude" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Tahmini Etkilenen Kişi Sayısı</label>
+                    <input type="number" name="estimated_affected_people" class="form-control" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Olay Tarihi *</label>
+                    <input type="datetime-local" name="occurred_at" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Açıklama</label>
+                    <textarea name="description" class="form-control" rows="3"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Kaydet</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="../src/services/api.js"></script>
+    <script src="../src/assets/js/utils.js"></script>
+    <script>
+        checkAuth();
+
+        const user = getUser();
+        if (user) {
+            document.getElementById('userName').textContent = user.full_name;
+        }
+
+        // Afetleri yükle
+        async function loadDisasters() {
+            try {
+                const filters = {
+                    status: document.getElementById('filterStatus').value,
+                    disaster_type: document.getElementById('filterType').value,
+                };
+
+                const disasters = await api.getDisasters(filters);
+                const tbody = document.getElementById('disastersTable');
+
+                if (disasters.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center">Kayıt bulunamadı</td></tr>';
+                } else {
+                    tbody.innerHTML = disasters.map(d => `
+                        <tr>
+                            <td>${d.title}</td>
+                            <td>${getDisasterTypeLabel(d.disaster_type)}</td>
+                            <td><span class="badge ${getBadgeClass('severity', d.severity)}">${getSeverityLabel(d.severity)}</span></td>
+                            <td>${d.city}, ${d.location_name}</td>
+                            <td>${formatNumber(d.estimated_affected_people)}</td>
+                            <td>${formatShortDate(d.occurred_at)}</td>
+                            <td><span class="badge ${getBadgeClass('status', d.status)}">${getStatusLabel(d.status)}</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-secondary" onclick="viewDisaster(${d.id})">Detay</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Afetler yüklenemedi:', error);
+                showNotification('Afetler yüklenemedi', 'error');
+            }
+        }
+
+        // Yeni afet formu
+        document.getElementById('newDisasterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            // Sayısal değerleri dönüştür
+            if (data.latitude) data.latitude = parseFloat(data.latitude);
+            if (data.longitude) data.longitude = parseFloat(data.longitude);
+            data.estimated_affected_people = parseInt(data.estimated_affected_people) || 0;
+
+            try {
+                await api.createDisaster(data);
+                showNotification('Afet kaydı oluşturuldu', 'success');
+                closeModal('newDisasterModal');
+                e.target.reset();
+                loadDisasters();
+            } catch (error) {
+                showNotification(error.message, 'error');
+            }
+        });
+
+        function viewDisaster(id) {
+            // TODO: Detay sayfasına yönlendir veya modal aç
+            showNotification('Detay sayfası yakında eklenecek', 'info');
+        }
+
+        // Sayfa yüklendiğinde
+        loadDisasters();
+    </script>
+</body>
+</html>
