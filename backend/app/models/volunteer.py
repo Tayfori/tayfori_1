@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Text, Float, Boolean, DateTime, 
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
-from ..database import Base
+from .database import Base
 
 
 class BloodType(enum.Enum):
