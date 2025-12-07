@@ -21,6 +21,20 @@ from app.models.notification import (
     NotificationType,
     NotificationStatus,
 )
+from app.models.volunteer import (
+    Volunteer,
+    Skill,
+    AssemblyPoint,
+    BloodType,
+    VolunteerStatus,
+)
+from app.models.disaster_call import (
+    DisasterCall,
+    DisasterCallSkill,
+    VolunteerAssignment,
+    DisasterCallStatus,
+    VolunteerAssignmentStatus,
+)
 
 __all__ = [
     "Base",
@@ -42,4 +56,14 @@ __all__ = [
     "Notification",
     "NotificationType",
     "NotificationStatus",
+    "Volunteer",
+    "Skill",
+    "AssemblyPoint",
+    "BloodType",
+    "VolunteerStatus",
+    "DisasterCall",
+    "DisasterCallSkill",
+    "VolunteerAssignment",
+    "DisasterCallStatus",
+    "VolunteerAssignmentStatus",
 ]

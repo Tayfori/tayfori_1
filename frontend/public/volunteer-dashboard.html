@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gönüllü Paneli - AFAD</title>
+    <link rel="stylesheet" href="../src/assets/css/styles.css">
+    <style>
+        .volunteer-header {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .volunteer-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .volunteer-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .volunteer-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .volunteer-details h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .volunteer-details p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+        }
+
+        .emergency-button {
+            background: #fff;
+            color: #dc2626;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .tab-menu {
+            background: white;
+            padding: 0;
+            border-bottom: 2px solid #eee;
+            display: flex;
+        }
+
+        .tab-menu button {
+            flex: 1;
+            padding: 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-menu button.active {
+            color: #dc2626;
+            border-bottom-color: #dc2626;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .call-card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #dc2626;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .call-card.pending {
+            border-left-color: #f59e0b;
+        }
+
+        .call-card.accepted {
+            border-left-color: #10b981;
+        }
+
+        .call-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+
+        .call-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .call-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .call-badge.critical {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .call-badge.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .call-badge.accepted {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .call-info {
+            margin: 10px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .call-info div {
+            margin: 5px 0;
+        }
+
+        .call-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-accept {
+            flex: 1;
+            padding: 10px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-reject {
+            flex: 1;
+            padding: 10px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .skill-tag {
+            padding: 5px 12px;
+            background: #f3f4f6;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-box h3 {
+            font-size: 32px;
+            margin: 0;
+            color: #dc2626;
+        }
+
+        .stat-box p {
+            margin: 5px 0 0 0;
+            color: #666;
+        }
+
+        #map {
+            height: 400px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="volunteer-header">
+        <div class="volunteer-info">
+            <div class="volunteer-avatar" id="volunteerAvatar">
+                👤
+            </div>
+            <div class="volunteer-details">
+                <h2 id="volunteerName">Yükleniyor...</h2>
+                <p id="volunteerCity">-</p>
+            </div>
+        </div>
+        <div>
+            <button class="emergency-button" onclick="call112()">
+                🚨 112 ARA
+            </button>
+            <button class="btn-logout" onclick="logout()" style="margin-left: 10px; background: rgba(255,255,255,0.2); color: white; border: 1px solid white; padding: 12px 20px; border-radius: 5px; cursor: pointer;">
+                Çıkış
+            </button>
+        </div>
+    </div>
+
+    <div class="tab-menu">
+        <button class="active" onclick="showTab('calls')">📢 Afet Çağrıları</button>
+        <button onclick="showTab('profile')">👤 Profilim</button>
+        <button onclick="showTab('map')">🗺️ Harita</button>
+        <button onclick="showTab('history')">📊 Geçmiş</button>
+    </div>
+
+    <div class="container">
+        <!-- Afet Çağrıları Tab -->
+        <div id="calls-tab" class="tab-content active">
+            <h2>Bekleyen Çağrılar</h2>
+            <div id="pendingCalls">
+                <p>Yükleniyor...</p>
+            </div>
+
+            <h2 style="margin-top: 30px;">Kabul Ettiğim Çağrılar</h2>
+            <div id="acceptedCalls">
+                <p>Yükleniyor...</p>
+            </div>
+        </div>
+
+        <!-- Profil Tab -->
+        <div id="profile-tab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <h3 id="totalMissions">0</h3>
+                    <p>Toplam Görev</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="completedMissions">0</h3>
+                    <p>Tamamlanan</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="totalHours">0</h3>
+                    <p>Gönüllülük Saati</p>
+                </div>
+                <div class="stat-box">
+                    <h3 id="rating">5.0</h3>
+                    <p>Değerlendirme ⭐</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Yetkinliklerim</div>
+                <div id="mySkills" class="skill-tags">
+                    <p>Yükleniyor...</p>
+                </div>
+                <button class="btn btn-primary" onclick="window.location.href='volunteer-profile.html'" style="margin-top: 15px;">
+                    Profili Düzenle
+                </button>
+            </div>
+        </div>
+
+        <!-- Harita Tab -->
+        <div id="map-tab" class="tab-content">
+            <h2>Toplanma Noktaları</h2>
+            <div id="map"></div>
+            <div id="assemblyPoints"></div>
+        </div>
+
+        <!-- Geçmiş Tab -->
+        <div id="history-tab" class="tab-content">
+            <h2>Görev Geçmişi</h2>
+            <div id="missionHistory">
+                <p>Yükleniyor...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let volunteer = null;
+        let map = null;
+
+        // Giriş kontrolü
+        function checkAuth() {
+            const token = localStorage.getItem('volunteer_token');
+            const userData = localStorage.getItem('volunteer_user');
+
+            if (!token || !userData) {
+                window.location.href = 'volunteer-login.html';
+                return;
+            }
+
+            volunteer = JSON.parse(userData);
+            loadVolunteerData();
+        }
+
+        // Çıkış
+        function logout() {
+            localStorage.removeItem('volunteer_token');
+            localStorage.removeItem('volunteer_user');
+            window.location.href = 'volunteer-login.html';
+        }
+
+        // 112 Ara
+        function call112() {
+            if (confirm('112 Acil Çağrı Merkezini aramak istiyor musunuz?')) {
+                window.location.href = 'tel:112';
+            }
+        }
+
+        // Tab değiştir
+        function showTab(tabName) {
+            // Tüm tabları gizle
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Tüm tab butonlarını pasif yap
+            document.querySelectorAll('.tab-menu button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Seçili tabı göster
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            event.target.classList.add('active');
+
+            // Harita tab'ı açıldığında haritayı başlat
+            if (tabName === 'map' && !map) {
+                initMap();
+            }
+        }
+
+        // Gönüllü verilerini yükle
+        function loadVolunteerData() {
+            // Header
+            document.getElementById('volunteerName').textContent =
+                `${volunteer.first_name} ${volunteer.last_name}`;
+            document.getElementById('volunteerCity').textContent = volunteer.city;
+
+            if (volunteer.profile_photo) {
+                document.getElementById('volunteerAvatar').innerHTML =
+                    `<img src="${API_BASE}${volunteer.profile_photo}" alt="Profil">`;
+            }
+
+            // İstatistikler
+            document.getElementById('totalMissions').textContent = volunteer.total_missions;
+            document.getElementById('completedMissions').textContent = volunteer.completed_missions;
+            document.getElementById('totalHours').textContent = volunteer.total_hours.toFixed(1);
+            document.getElementById('rating').textContent = volunteer.rating.toFixed(1);
+
+            // Yetkinlikler
+            loadSkills();
+
+            // Çağrıları yükle
+            loadCalls();
+        }
+
+        // Yetkinlikleri yükle
+        function loadSkills() {
+            const skillsContainer = document.getElementById('mySkills');
+
+            if (!volunteer.skills || volunteer.skills.length === 0) {
+                skillsContainer.innerHTML = '<p style="color: #666;">Henüz yetkinlik eklenmemiş. <a href="volunteer-profile.html">Yetkinlik Ekle</a></p>';
+                return;
+            }
+
+            skillsContainer.innerHTML = volunteer.skills.map(s => `
+                <div class="skill-tag">
+                    <span>${s.skill.name}</span>
+                    <span>⭐ ${s.proficiency_level}/5</span>
+                    ${s.certified ? '<span style="color: #10b981;">✓ Sertifikalı</span>' : ''}
+                </div>
+            `).join('');
+        }
+
+        // Çağrıları yükle
+        async function loadCalls() {
+            const token = localStorage.getItem('volunteer_token');
+
+            try {
+                // Kendi atamalarımı getir
+                const response = await fetch(`${API_BASE}/api/disaster-calls/assignments/my`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const assignments = await response.json();
+
+                    // Bekleyenler
+                    const pending = assignments.filter(a => a.status === 'pending');
+                    const accepted = assignments.filter(a => a.status === 'accepted' || a.status === 'arrived');
+
+                    displayCalls('pendingCalls', pending, true);
+                    displayCalls('acceptedCalls', accepted, false);
+                }
+            } catch (error) {
+                console.error('Çağrılar yüklenemedi:', error);
+            }
+        }
+
+        // Çağrıları göster
+        function displayCalls(containerId, calls, showActions) {
+            const container = document.getElementById(containerId);
+
+            if (calls.length === 0) {
+                container.innerHTML = '<p style="color: #666;">Çağrı bulunmuyor.</p>';
+                return;
+            }
+
+            container.innerHTML = calls.map(assignment => `
+                <div class="call-card ${assignment.status}">
+                    <div class="call-header">
+                        <div class="call-title">${assignment.disaster_call_id}</div>
+                        <span class="call-badge ${assignment.status}">${getStatusLabel(assignment.status)}</span>
+                    </div>
+                    <div class="call-info">
+                        <div>📍 Mesafe: ${assignment.distance_km ? assignment.distance_km.toFixed(1) + ' km' : 'Bilinmiyor'}</div>
+                        <div>🎯 Eşleşme Skoru: ${assignment.match_score.toFixed(0)}%</div>
+                        <div>⏰ Atanma: ${new Date(assignment.assigned_at).toLocaleString('tr-TR')}</div>
+                    </div>
+                    ${showActions ? `
+                        <div class="call-actions">
+                            <button class="btn-accept" onclick="respondToCall(${assignment.id}, true)">
+                                ✓ Kabul Et
+                            </button>
+                            <button class="btn-reject" onclick="respondToCall(${assignment.id}, false)">
+                                ✗ Reddet
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Çağrıya cevap ver
+        async function respondToCall(assignmentId, accept) {
+            const token = localStorage.getItem('volunteer_token');
+            const action = accept ? 'kabul' : 'reddetmek';
+
+            if (!confirm(`Bu çağrıyı ${action} istediğinize emin misiniz?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/disaster-calls/assignments/${assignmentId}/respond`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ accept })
+                });
+
+                if (response.ok) {
+                    alert(accept ? '✅ Çağrı kabul edildi!' : 'Çağrı reddedildi.');
+                    loadCalls(); // Yenile
+                } else {
+                    alert('❌ Bir hata oluştu.');
+                }
+            } catch (error) {
+                console.error('Cevap gönderilemedi:', error);
+                alert('❌ Bir hata oluştu.');
+            }
+        }
+
+        function getStatusLabel(status) {
+            const labels = {
+                'pending': 'Bekliyor',
+                'accepted': 'Kabul Edildi',
+                'rejected': 'Reddedildi',
+                'arrived': 'Ulaştım',
+                'completed': 'Tamamlandı',
+                'cancelled': 'İptal'
+            };
+            return labels[status] || status;
+        }
+
+        // Harita
+        function initMap() {
+            map = L.map('map').setView([volunteer.latitude || 39.9334, volunteer.longitude || 32.8597], 10);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Gönüllünün konumu
+            if (volunteer.latitude && volunteer.longitude) {
+                L.marker([volunteer.latitude, volunteer.longitude])
+                    .addTo(map)
+                    .bindPopup('<strong>Konumunuz</strong>')
+                    .openPopup();
+            }
+
+            // Toplanma noktalarını yükle
+            loadAssemblyPoints();
+        }
+
+        async function loadAssemblyPoints() {
+            try {
+                const response = await fetch(`${API_BASE}/api/volunteers/assembly-points/?city=${volunteer.city}`);
+                const points = await response.json();
+
+                points.forEach(point => {
+                    L.marker([point.latitude, point.longitude], {
+                        icon: L.divIcon({
+                            className: 'assembly-point-icon',
+                            html: '🏕️',
+                            iconSize: [30, 30]
+                        })
+                    })
+                    .addTo(map)
+                    .bindPopup(`
+                        <strong>${point.name}</strong><br>
+                        ${point.address}<br>
+                        Kapasite: ${point.capacity || 'Sınırsız'}
+                    `);
+                });
+            } catch (error) {
+                console.error('Toplanma noktaları yüklenemedi:', error);
+            }
+        }
+
+        // Sayfa yüklendiğinde
+        checkAuth();
+    </script>
+</body>
+</html>

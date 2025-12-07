@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Afet Çağrısı Yönetimi - AFAD</title>
+    <link rel="stylesheet" href="../src/assets/css/styles.css">
+    <style>
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .call-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .call-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .call-item.critical {
+            border-left-color: #dc2626;
+        }
+
+        .call-item.active {
+            border-left-color: #f59e0b;
+        }
+
+        .call-item.completed {
+            border-left-color: #10b981;
+        }
+
+        .call-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .call-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .call-meta {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .call-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #dc2626;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .call-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .call-actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .btn-match {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-activate {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-view {
+            background: #6b7280;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .skill-selector {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .skill-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: white;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .matched-volunteer {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .volunteer-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .score-badge {
+            padding: 5px 12px;
+            background: #10b981;
+            color: white;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span>🚨</span>
+                <span>AFAD Yönetim Sistemi</span>
+            </div>
+            <nav class="nav">
+                <a href="/index.html">Dashboard</a>
+                <a href="/disasters.html">Afetler</a>
+                <a href="/volunteer-management.html">Gönüllüler</a>
+                <a href="/disaster-call-management.html" class="active">Afet Çağrıları</a>
+            </nav>
+            <div class="user-menu">
+                <button class="btn-logout" onclick="logout()">Çıkış</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="action-bar">
+            <h1>📢 Afet Çağrısı Yönetimi</h1>
+            <button class="btn btn-primary" onclick="showCreateModal()">
+                + Yeni Çağrı Oluştur
+            </button>
+        </div>
+
+        <div class="call-list" id="callList">
+            <p>Yükleniyor...</p>
+        </div>
+    </div>
+
+    <!-- Yeni Çağrı Modal -->
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🆕 Yeni Afet Çağrısı</h2>
+                <button class="close-btn" onclick="closeCreateModal()">&times;</button>
+            </div>
+
+            <form id="createForm">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>Afet Seçin *</label>
+                        <select id="disasterId" required>
+                            <option value="">Seçiniz...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Çağrı Başlığı *</label>
+                        <input type="text" id="title" required>
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Açıklama</label>
+                        <textarea id="description" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Gerekli Gönüllü Sayısı *</label>
+                        <input type="number" id="requiredVolunteers" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Öncelik</label>
+                        <select id="priority">
+                            <option value="low">Düşük</option>
+                            <option value="medium" selected>Orta</option>
+                            <option value="high">Yüksek</option>
+                            <option value="critical">Kritik</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tahmini Süre (saat)</label>
+                        <input type="number" id="estimatedDuration" step="0.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Başlangıç Zamanı</label>
+                        <input type="datetime-local" id="startTime">
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Konum</label>
+                        <input type="text" id="location">
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Gerekli Ekipman</label>
+                        <textarea id="equipmentNeeded" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-group full">
+                        <label>Özel Talimatlar</label>
+                        <textarea id="specialInstructions" rows="2"></textarea>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        Oluştur
+                    </button>
+                    <button type="button" class="btn" onclick="closeCreateModal()" style="flex: 1;">
+                        İptal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Eşleştirme Modal -->
+    <div id="matchModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎯 Gönüllü Eşleştirme</h2>
+                <button class="close-btn" onclick="closeMatchModal()">&times;</button>
+            </div>
+
+            <div id="matchResults">
+                <p>Eşleştirme yapılıyor...</p>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="assignMatched()">
+                    Tümünü Ata ve Bildir
+                </button>
+                <button class="btn" onclick="closeMatchModal()">
+                    Kapat
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let currentCall = null;
+        let matchedVolunteers = [];
+
+        // Sayfa yüklendiğinde
+        loadDisasters();
+        loadCalls();
+
+        // Afetleri yükle (dropdown için)
+        async function loadDisasters() {
+            try {
+                const response = await fetch(`${API_BASE}/api/disasters/`);
+                const disasters = await response.json();
+
+                const select = document.getElementById('disasterId');
+                select.innerHTML = '<option value="">Seçiniz...</option>' +
+                    disasters.map(d => `
+                        <option value="${d.id}">${d.title} - ${d.location_name}</option>
+                    `).join('');
+            } catch (error) {
+                console.error('Afetler yüklenemedi:', error);
+            }
+        }
+
+        // Çağrıları yükle
+        async function loadCalls() {
+            try {
+                const response = await fetch(`${API_BASE}/api/disaster-calls/`);
+                const calls = await response.json();
+
+                displayCalls(calls);
+            } catch (error) {
+                console.error('Çağrılar yüklenemedi:', error);
+                document.getElementById('callList').innerHTML =
+                    '<p>Çağrılar yüklenirken bir hata oluştu.</p>';
+            }
+        }
+
+        // Çağrıları göster
+        function displayCalls(calls) {
+            const list = document.getElementById('callList');
+
+            if (calls.length === 0) {
+                list.innerHTML = '<p>Henüz afet çağrısı oluşturulmamış.</p>';
+                return;
+            }
+
+            list.innerHTML = calls.map(call => `
+                <div class="call-item ${call.status} ${call.priority}">
+                    <div class="call-header">
+                        <div>
+                            <div class="call-title">${call.title}</div>
+                            <div class="call-meta">
+                                🆔 #${call.id} |
+                                📅 ${new Date(call.created_at).toLocaleDateString('tr-TR')} |
+                                🚨 ${getPriorityLabel(call.priority)}
+                            </div>
+                        </div>
+                        <span class="badge ${getBadgeClass(call.status)}">${getStatusLabel(call.status)}</span>
+                    </div>
+
+                    ${call.description ? `<p style="color: #666; margin: 10px 0;">${call.description}</p>` : ''}
+
+                    <div class="call-stats">
+                        <div class="stat">
+                            <div class="stat-value">${call.required_volunteers}</div>
+                            <div class="stat-label">Gerekli</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${call.assigned_volunteers}</div>
+                            <div class="stat-label">Atanan</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">${call.accepted_volunteers}</div>
+                            <div class="stat-label">Kabul Eden</div>
+                        </div>
+                    </div>
+
+                    <div class="call-actions">
+                        <button class="btn-match" onclick="runMatching(${call.id})">
+                            🎯 Akıllı Eşleştir
+                        </button>
+                        ${call.status === 'draft' ? `
+                            <button class="btn-activate" onclick="activateCall(${call.id})">
+                                ✓ Aktif Et
+                            </button>
+                        ` : ''}
+                        <button class="btn-view" onclick="viewAssignments(${call.id})">
+                            👥 Atananları Gör (${call.assigned_volunteers})
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Yeni çağrı oluştur
+        function showCreateModal() {
+            document.getElementById('createModal').classList.add('show');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').classList.remove('show');
+            document.getElementById('createForm').reset();
+        }
+
+        document.getElementById('createForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const data = {
+                disaster_id: parseInt(document.getElementById('disasterId').value),
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value || null,
+                required_volunteers: parseInt(document.getElementById('requiredVolunteers').value),
+                priority: document.getElementById('priority').value,
+                estimated_duration: parseFloat(document.getElementById('estimatedDuration').value) || null,
+                start_time: document.getElementById('startTime').value || null,
+                location: document.getElementById('location').value || null,
+                equipment_needed: document.getElementById('equipmentNeeded').value || null,
+                special_instructions: document.getElementById('specialInstructions').value || null,
+                required_skills: []
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/disaster-calls/`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    alert('✅ Afet çağrısı oluşturuldu!');
+                    closeCreateModal();
+                    loadCalls();
+                } else {
+                    const error = await response.json();
+                    alert('❌ Hata: ' + (error.detail || 'Oluşturulamadı'));
+                }
+            } catch (error) {
+                console.error('Oluşturma hatası:', error);
+                alert('❌ Bir hata oluştu.');
+            }
+        });
+
+        // Akıllı eşleştirme
+        async function runMatching(callId) {
+            currentCall = callId;
+            document.getElementById('matchModal').classList.add('show');
+            document.getElementById('matchResults').innerHTML = '<p>🔄 Eşleştirme yapılıyor...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/disaster-calls/match`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        disaster_call_id: callId,
+                        max_distance_km: 50,
+                        auto_assign: false,
+                        auto_notify: false
+                    })
+                });
+
+                const result = await response.json();
+                matchedVolunteers = result.matched_volunteers;
+
+                if (matchedVolunteers.length === 0) {
+                    document.getElementById('matchResults').innerHTML =
+                        '<p>⚠️ Uygun gönüllü bulunamadı.</p>';
+                    return;
+                }
+
+                document.getElementById('matchResults').innerHTML = `
+                    <p><strong>🎯 ${matchedVolunteers.length} uygun gönüllü bulundu!</strong></p>
+                    <p style="color: #666; margin-bottom: 15px;">Eşleştirme skoru: Yetkinlik (%40) + Mesafe (%30) + Rating (%20) + Deneyim (%10)</p>
+                    ${matchedVolunteers.map(v => `
+                        <div class="matched-volunteer">
+                            <div class="volunteer-info">
+                                <div>
+                                    <strong>${v.first_name} ${v.last_name}</strong><br>
+                                    <span style="font-size: 13px; color: #666;">
+                                        ${v.phone} | ${v.distance_km ? v.distance_km.toFixed(1) + ' km' : 'Uzaklık bilinmiyor'}
+                                    </span><br>
+                                    <span style="font-size: 12px; color: #666;">
+                                        ⭐ ${v.rating.toFixed(1)} | 🎯 ${v.total_missions} görev
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="score-badge">Skor: ${v.match_score.toFixed(0)}</span>
+                        </div>
+                    `).join('')}
+                `;
+            } catch (error) {
+                console.error('Eşleştirme hatası:', error);
+                document.getElementById('matchResults').innerHTML =
+                    '<p>❌ Eşleştirme sırasında bir hata oluştu.</p>';
+            }
+        }
+
+        // Eşleşen gönüllüleri ata
+        async function assignMatched() {
+            if (matchedVolunteers.length === 0) return;
+
+            if (!confirm(`${matchedVolunteers.length} gönüllüyü atamak ve bildirim göndermek istiyor musunuz?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/disaster-calls/match`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        disaster_call_id: currentCall,
+                        max_distance_km: 50,
+                        auto_assign: true,
+                        auto_notify: true
+                    })
+                });
+
+                if (response.ok) {
+                    alert('✅ Gönüllüler atandı ve bildirimler gönderildi!');
+                    closeMatchModal();
+                    loadCalls();
+                } else {
+                    alert('❌ Atama sırasında bir hata oluştu.');
+                }
+            } catch (error) {
+                console.error('Atama hatası:', error);
+                alert('❌ Bir hata oluştu.');
+            }
+        }
+
+        function closeMatchModal() {
+            document.getElementById('matchModal').classList.remove('show');
+            matchedVolunteers = [];
+        }
+
+        // Çağrıyı aktif et
+        async function activateCall(callId) {
+            if (!confirm('Bu çağrıyı aktif etmek istiyor musunuz? Atanan gönüllüler bildirim alacak.')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/disaster-calls/${callId}/activate`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    alert('✅ Çağrı aktif edildi!');
+                    loadCalls();
+                } else {
+                    alert('❌ Bir hata oluştu.');
+                }
+            } catch (error) {
+                console.error('Aktivasyon hatası:', error);
+                alert('❌ Bir hata oluştu.');
+            }
+        }
+
+        // Atananları görüntüle
+        async function viewAssignments(callId) {
+            alert('Atananları görüntüleme özelliği geliştirme aşamasında.');
+        }
+
+        function getPriorityLabel(priority) {
+            const labels = {
+                'low': 'Düşük',
+                'medium': 'Orta',
+                'high': 'Yüksek',
+                'critical': 'KRİTİK'
+            };
+            return labels[priority] || priority;
+        }
+
+        function getStatusLabel(status) {
+            const labels = {
+                'draft': 'Taslak',
+                'active': 'Aktif',
+                'in_progress': 'Devam Ediyor',
+                'completed': 'Tamamlandı',
+                'cancelled': 'İptal'
+            };
+            return labels[status] || status;
+        }
+
+        function getBadgeClass(status) {
+            if (status === 'active') return 'badge-warning';
+            if (status === 'completed') return 'badge-success';
+            if (status === 'cancelled') return 'badge-danger';
+            return 'badge-info';
+        }
+
+        function logout() {
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gönüllü Girişi - AFAD Gönüllü Sistemi</title>
+    <link rel="stylesheet" href="../src/assets/css/styles.css">
+    <style>
+        .login-container {
+            max-width: 450px;
+            margin: 100px auto;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 40px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            color: #dc2626;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #dc2626;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: #dc2626;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .btn-login:hover {
+            background: #b91c1c;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .register-link a {
+            color: #dc2626;
+            text-decoration: none;
+        }
+
+        .back-to-admin {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .back-to-admin a {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1>🆘 Gönüllü Girişi</h1>
+                <p>Gönüllü paneline hoş geldiniz</p>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>E-posta</label>
+                    <input type="email" id="email" required autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label>Şifre</label>
+                    <input type="password" id="password" required>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    Giriş Yap
+                </button>
+            </form>
+
+            <div class="register-link">
+                Hesabınız yok mu? <a href="volunteer-register.html">Gönüllü Olun</a>
+            </div>
+
+            <div class="back-to-admin">
+                <a href="login.html">← Yönetici Girişi</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/volunteers/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Token'ı kaydet
+                    localStorage.setItem('volunteer_token', data.access_token);
+                    localStorage.setItem('volunteer_user', JSON.stringify(data.volunteer));
+
+                    // Gönüllü dashboard'a yönlendir
+                    window.location.href = 'volunteer-dashboard.html';
+                } else {
+                    if (response.status === 403) {
+                        alert('⚠️ Hesabınız henüz onaylanmamış. Lütfen yönetici onayını bekleyin.');
+                    } else {
+                        alert('❌ Hata: ' + (data.detail || 'Giriş başarısız'));
+                    }
+                }
+            } catch (error) {
+                console.error('Giriş hatası:', error);
+                alert('❌ Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+            }
+        });
+    </script>
+</body>
+</html>

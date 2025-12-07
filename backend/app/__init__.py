@@ -40,6 +40,8 @@ def create_app() -> FastAPI:
         inventory,
         notifications,
         dashboard,
+        volunteers,
+        disaster_calls,
     )
 
     app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
@@ -51,6 +53,8 @@ def create_app() -> FastAPI:
         notifications.router, prefix="/api/notifications", tags=["Notifications"]
     )
     app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
+    app.include_router(volunteers.router)  # Prefix zaten router'da tanımlı
+    app.include_router(disaster_calls.router)  # Prefix zaten router'da tanımlı
 
     @app.get("/")
     async def root():

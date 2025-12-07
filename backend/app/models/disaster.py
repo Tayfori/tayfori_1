@@ -74,6 +74,7 @@ class Disaster(Base):
     # İlişkiler
     reported_by_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     reported_by = relationship("User", foreign_keys=[reported_by_id])
+    calls = relationship("DisasterCall", back_populates="disaster", cascade="all, delete-orphan")
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

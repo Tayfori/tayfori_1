@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gönüllü Yönetimi - AFAD Yönetim Sistemi</title>
+    <link rel="stylesheet" href="../src/assets/css/styles.css">
+    <style>
+        .filter-bar {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-bar select,
+        .filter-bar input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .volunteer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .volunteer-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .volunteer-card.pending {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .volunteer-card.approved {
+            border-left: 4px solid #10b981;
+        }
+
+        .volunteer-header {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .volunteer-photo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .volunteer-photo img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .volunteer-info h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+
+        .volunteer-info p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-badge.approved {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .volunteer-details {
+            margin: 15px 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .volunteer-details div {
+            margin: 5px 0;
+        }
+
+        .volunteer-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .skill-badge {
+            padding: 4px 10px;
+            background: #f3f4f6;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+
+        .volunteer-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .volunteer-actions button {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-approve {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-reject {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-view {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .stat-item h4 {
+            margin: 0;
+            font-size: 24px;
+            color: #dc2626;
+        }
+
+        .stat-item p {
+            margin: 5px 0 0 0;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span>🚨</span>
+                <span>AFAD Yönetim Sistemi</span>
+            </div>
+            <nav class="nav">
+                <a href="/index.html">Dashboard</a>
+                <a href="/disasters.html">Afetler</a>
+                <a href="/volunteer-management.html" class="active">Gönüllüler</a>
+                <a href="/disaster-call-management.html">Afet Çağrıları</a>
+            </nav>
+            <div class="user-menu">
+                <button class="btn-logout" onclick="logout()">Çıkış</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>👥 Gönüllü Yönetimi</h1>
+
+        <!-- İstatistikler -->
+        <div class="stats-row">
+            <div class="stat-item">
+                <h4 id="totalVolunteers">0</h4>
+                <p>Toplam Gönüllü</p>
+            </div>
+            <div class="stat-item">
+                <h4 id="activeVolunteers">0</h4>
+                <p>Aktif</p>
+            </div>
+            <div class="stat-item">
+                <h4 id="pendingVolunteers">0</h4>
+                <p>Onay Bekliyor</p>
+            </div>
+            <div class="stat-item">
+                <h4 id="onDutyVolunteers">0</h4>
+                <p>Görevde</p>
+            </div>
+        </div>
+
+        <!-- Filtreler -->
+        <div class="filter-bar">
+            <select id="filterStatus" onchange="loadVolunteers()">
+                <option value="">Tüm Durumlar</option>
+                <option value="pending">Onay Bekliyor</option>
+                <option value="approved">Onaylanmış</option>
+            </select>
+
+            <select id="filterCity" onchange="loadVolunteers()">
+                <option value="">Tüm Şehirler</option>
+                <option value="Ankara">Ankara</option>
+                <option value="İstanbul">İstanbul</option>
+                <option value="İzmir">İzmir</option>
+                <option value="Hatay">Hatay</option>
+                <option value="Kahramanmaraş">Kahramanmaraş</option>
+            </select>
+
+            <button class="btn btn-primary" onclick="window.location.href='volunteer-register.html'">
+                + Yeni Gönüllü Ekle
+            </button>
+        </div>
+
+        <!-- Gönüllüler -->
+        <div class="volunteer-grid" id="volunteersGrid">
+            <p>Yükleniyor...</p>
+        </div>
+    </div>
+
+    <!-- Detay Modal -->
+    <div id="volunteerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Gönüllü Detayları</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody">
+                <!-- Detaylar buraya yüklenecek -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        // Sayfa yüklendiğinde
+        loadVolunteerStats();
+        loadVolunteers();
+
+        // İstatistikleri yükle
+        async function loadVolunteerStats() {
+            try {
+                const response = await fetch(`${API_BASE}/api/volunteers/stats`);
+                const stats = await response.json();
+
+                document.getElementById('totalVolunteers').textContent = stats.total_volunteers;
+                document.getElementById('activeVolunteers').textContent = stats.active_volunteers;
+                document.getElementById('onDutyVolunteers').textContent = stats.on_duty_volunteers;
+
+                // Onay bekleyenleri hesapla (ayrı sorgu gerekebilir)
+                const pendingResponse = await fetch(`${API_BASE}/api/volunteers/?is_approved=false`);
+                const pending = await response.json();
+                document.getElementById('pendingVolunteers').textContent = pending.length || 0;
+            } catch (error) {
+                console.error('İstatistikler yüklenemedi:', error);
+            }
+        }
+
+        // Gönüllüleri yükle
+        async function loadVolunteers() {
+            const status = document.getElementById('filterStatus').value;
+            const city = document.getElementById('filterCity').value;
+
+            let url = `${API_BASE}/api/volunteers/?limit=100`;
+
+            if (status === 'pending') {
+                url += '&is_approved=false';
+            } else if (status === 'approved') {
+                url += '&is_approved=true';
+            }
+
+            if (city) {
+                url += `&city=${encodeURIComponent(city)}`;
+            }
+
+            try {
+                const response = await fetch(url);
+                const volunteers = await response.json();
+
+                displayVolunteers(volunteers);
+            } catch (error) {
+                console.error('Gönüllüler yüklenemedi:', error);
+                document.getElementById('volunteersGrid').innerHTML =
+                    '<p>Gönüllüler yüklenirken bir hata oluştu.</p>';
+            }
+        }
+
+        // Gönüllüleri göster
+        function displayVolunteers(volunteers) {
+            const grid = document.getElementById('volunteersGrid');
+
+            if (volunteers.length === 0) {
+                grid.innerHTML = '<p style="grid-column: 1/-1;">Gönüllü bulunamadı.</p>';
+                return;
+            }
+
+            grid.innerHTML = volunteers.map(v => `
+                <div class="volunteer-card ${v.is_approved ? 'approved' : 'pending'}">
+                    <span class="status-badge ${v.is_approved ? 'approved' : 'pending'}">
+                        ${v.is_approved ? '✓ Onaylı' : '⏳ Bekliyor'}
+                    </span>
+
+                    <div class="volunteer-header">
+                        <div class="volunteer-photo">
+                            ${v.profile_photo ?
+                                `<img src="${API_BASE}${v.profile_photo}" alt="${v.first_name}">` :
+                                '👤'
+                            }
+                        </div>
+                        <div class="volunteer-info">
+                            <h3>${v.first_name} ${v.last_name}</h3>
+                            <p>📧 ${v.email}</p>
+                            <p>📞 ${v.phone}</p>
+                        </div>
+                    </div>
+
+                    <div class="volunteer-details">
+                        <div>📍 ${v.city}${v.district ? ', ' + v.district : ''}</div>
+                        <div>⭐ Değerlendirme: ${v.rating.toFixed(1)}/5.0</div>
+                        <div>🎯 Görev: ${v.total_missions} (${v.completed_missions} tamamlandı)</div>
+                        <div>💼 Durum: ${getStatusLabel(v.status)}</div>
+                    </div>
+
+                    <div class="volunteer-actions">
+                        ${!v.is_approved ? `
+                            <button class="btn-approve" onclick="approveVolunteer(${v.id}, true)">
+                                ✓ Onayla
+                            </button>
+                            <button class="btn-reject" onclick="approveVolunteer(${v.id}, false)">
+                                ✗ Reddet
+                            </button>
+                        ` : `
+                            <button class="btn-view" onclick="viewVolunteer(${v.id})">
+                                👁️ Detay
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Gönüllü onayla/reddet
+        async function approveVolunteer(volunteerId, approve) {
+            const action = approve ? 'onaylamak' : 'reddetmek';
+
+            if (!confirm(`Bu gönüllüyü ${action} istediğinize emin misiniz?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/volunteers/${volunteerId}/approve?approved=${approve}`, {
+                    method: 'POST'
+                });
+
+                if (response.ok) {
+                    alert(approve ? '✅ Gönüllü onaylandı!' : 'Gönüllü reddedildi.');
+                    loadVolunteers();
+                    loadVolunteerStats();
+                } else {
+                    alert('❌ Bir hata oluştu.');
+                }
+            } catch (error) {
+                console.error('Onay işlemi başarısız:', error);
+                alert('❌ Bir hata oluştu.');
+            }
+        }
+
+        // Gönüllü detayını göster
+        async function viewVolunteer(volunteerId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/volunteers/${volunteerId}`);
+                const volunteer = await response.json();
+
+                document.getElementById('modalBody').innerHTML = `
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="width: 100px; height: 100px; margin: 0 auto; border-radius: 50%; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 40px;">
+                            ${volunteer.profile_photo ?
+                                `<img src="${API_BASE}${volunteer.profile_photo}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">` :
+                                '👤'
+                            }
+                        </div>
+                        <h2 style="margin: 10px 0 5px 0;">${volunteer.first_name} ${volunteer.last_name}</h2>
+                        <p style="color: #666;">${volunteer.email}</p>
+                    </div>
+
+                    <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h3>Kişisel Bilgiler</h3>
+                        <p><strong>TC No:</strong> ${volunteer.tc_no}</p>
+                        <p><strong>Telefon:</strong> ${volunteer.phone}</p>
+                        <p><strong>Doğum Tarihi:</strong> ${volunteer.birth_date || '-'}</p>
+                        <p><strong>Cinsiyet:</strong> ${volunteer.gender || '-'}</p>
+                        <p><strong>Kan Grubu:</strong> ${volunteer.blood_type || '-'}</p>
+                        <p><strong>Meslek:</strong> ${volunteer.occupation || '-'}</p>
+                    </div>
+
+                    <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h3>Konum Bilgileri</h3>
+                        <p><strong>Adres:</strong> ${volunteer.address || '-'}</p>
+                        <p><strong>Şehir:</strong> ${volunteer.city}</p>
+                        <p><strong>İlçe:</strong> ${volunteer.district || '-'}</p>
+                    </div>
+
+                    <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                        <h3>Acil Durum İletişim</h3>
+                        <p><strong>İsim:</strong> ${volunteer.emergency_contact_name || '-'}</p>
+                        <p><strong>Telefon:</strong> ${volunteer.emergency_contact_phone || '-'}</p>
+                        <p><strong>Yakınlık:</strong> ${volunteer.emergency_contact_relation || '-'}</p>
+                    </div>
+
+                    <div style="background: #f9fafb; padding: 15px; border-radius: 8px;">
+                        <h3>İstatistikler</h3>
+                        <p><strong>Toplam Görev:</strong> ${volunteer.total_missions}</p>
+                        <p><strong>Tamamlanan:</strong> ${volunteer.completed_missions}</p>
+                        <p><strong>Gönüllülük Saati:</strong> ${volunteer.total_hours.toFixed(1)}</p>
+                        <p><strong>Değerlendirme:</strong> ${volunteer.rating.toFixed(1)}/5.0 ⭐</p>
+                    </div>
+                `;
+
+                document.getElementById('volunteerModal').classList.add('show');
+            } catch (error) {
+                console.error('Detay yüklenemedi:', error);
+                alert('❌ Detay yüklenirken bir hata oluştu.');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('volunteerModal').classList.remove('show');
+        }
+
+        function getStatusLabel(status) {
+            const labels = {
+                'active': 'Aktif',
+                'inactive': 'Pasif',
+                'on_duty': 'Görevde',
+                'unavailable': 'Müsait Değil'
+            };
+            return labels[status] || status;
+        }
+
+        function logout() {
+            // Admin logout
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

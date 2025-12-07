@@ -11,7 +11,7 @@ from app.utils.security import get_password_hash
 from config import settings
 
 
-def initialize_database():
+def initialize_database(with_demo=False):
     """Veritabanını başlat ve örnek veriler ekle"""
     print("🔧 Veritabanı başlatılıyor...")
     init_db()
@@ -98,6 +98,11 @@ def initialize_database():
         print("   Saha:        saha@afad.gov.tr / saha123")
         print("   Gözlemci:    gozlemci@afad.gov.tr / gozlem123")
 
+        # Demo verileri ekle
+        if with_demo:
+            from app.utils.init_demo_data import init_demo_data
+            init_demo_data(db)
+
     except Exception as e:
         print(f"❌ Hata: {e}")
         db.rollback()
@@ -112,6 +117,9 @@ def main():
         "--init-db", action="store_true", help="Veritabanını başlat"
     )
     parser.add_argument(
+        "--demo", action="store_true", help="Demo verileri ekle (--init-db ile birlikte)"
+    )
+    parser.add_argument(
         "--host", type=str, default=settings.HOST, help="Sunucu host adresi"
     )
     parser.add_argument(
@@ -124,7 +132,7 @@ def main():
     args = parser.parse_args()
 
     if args.init_db:
-        initialize_database()
+        initialize_database(with_demo=args.demo)
         return
 
     # FastAPI uygulamasını oluştur
