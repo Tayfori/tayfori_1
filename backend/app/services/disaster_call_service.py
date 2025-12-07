@@ -13,7 +13,7 @@ from ..models.disaster_call import (
     VolunteerAssignment,
     DisasterCallStatus,
     VolunteerAssignmentStatus,
-    Notification as VolunteerNotification
+    VolunteerNotification
 )
 from ..models.disaster import Disaster
 from ..models.volunteer import Volunteer, VolunteerStatus

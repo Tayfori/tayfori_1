@@ -32,6 +32,7 @@ from app.models.disaster_call import (
     DisasterCall,
     DisasterCallSkill,
     VolunteerAssignment,
+    VolunteerNotification,
     DisasterCallStatus,
     VolunteerAssignmentStatus,
 )
@@ -64,6 +65,7 @@ __all__ = [
     "DisasterCall",
     "DisasterCallSkill",
     "VolunteerAssignment",
+    "VolunteerNotification",
     "DisasterCallStatus",
     "VolunteerAssignmentStatus",
 ]

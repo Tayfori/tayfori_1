@@ -138,9 +138,9 @@ class VolunteerAssignment(Base):
         return f"<VolunteerAssignment {self.volunteer.first_name} - {self.disaster_call.title} ({self.status.value})>"
 
 
-class Notification(Base):
-    """Bildirim modeli"""
-    __tablename__ = 'notifications'
+class VolunteerNotification(Base):
+    """Gönüllü bildirim modeli"""
+    __tablename__ = 'volunteer_notifications'
 
     id = Column(Integer, primary_key=True, index=True)
 
@@ -168,4 +168,4 @@ class Notification(Base):
     volunteer = relationship('Volunteer', back_populates='notifications')
 
     def __repr__(self):
-        return f"<Notification {self.title} - {self.volunteer.email}>"
+        return f"<VolunteerNotification {self.title} - {self.volunteer.email}>"
